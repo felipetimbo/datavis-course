@@ -4,15 +4,15 @@ let file = "movies.json";
  * Callback function
  */
 d3.json(file, function(error, json) {
-	render(json, "Worldwide_Gross_M", "Maiores bilheterias de filmes", 0.4, "#4682b4", "Film");
-	render(json, "Budget_M", "Maiores orçamentos de filmes", 3.5, "#a66f00", "Film");
+	render(json, "Worldwide_Gross_M", "Ranking de bilheterias de filmes", 0.4, "#4682b4", "Film");
+	render(json, "Budget_M", "Ranking de orçamentos de filmes", 3.5, "#a66f00", "Film");
 	
 	json.map((obj) => {
 	    obj.Profit = obj.Worldwide_Gross_M - obj.Budget_M;
 	    return obj;
 	})
 	
-	render(json, "Profit", "Maiores lucros de filmes", 0.4, "#d94501", "Film");
+	render(json, "Profit", "Ranking de lucros de filmes", 0.4, "#d94501", "Film");
 	
 	var groups = _.groupBy(json, 'Genre');
 	var genres = _.map(groups, function(value, key) {
@@ -24,7 +24,7 @@ d3.json(file, function(error, json) {
 	  };
 	});
 	
-	render(genres, "WWGross", "Gêneros de filmes com maiores bilheterias", 0.09, "#525252", "Genre");
+	render(genres, "WWGross", "Ranking de gêneros de filmes com maiores bilheterias", 0.09, "#525252", "Genre");
 	
 });
 
