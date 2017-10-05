@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Bilheterias com </title>
+		<link rel="stylesheet" href="css/dc.css">
+		<link rel="stylesheet" href="css/styles.css">
+		<script src="js/crossfilter.js" charset="utf-8"></script>
+		<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+		<script src="js/dc.js" charset="utf-8"></script>
+	</head>
+	
+	<body>
+		<table>
+			<tr>
+				<td>
+					<h1>Total apurado em bilheterias por ano</h1>
+					<div id="yearChart"></div>
+				</td>
+				<td>
+					<h1>Total apurado em bilheterias por gênero</h1>
+					<div id="genreChart"></div>
+				</td>
+			</tr>
+		</table>
+		
+		<script type="text/javascript">
+			var yearChart = dc.barChart('#yearChart');
+			var genreChart = dc.barChart('#genreChart');
+	
+			d3.json("movies.json", function(data){
+	            //criando um crossfilter
+	            var facts = crossfilter(data);
+	
+	            // ciando dimensao de ano
+	            var yearDim = facts.dimension(function(d){
+	                return d.Year;
+	            });
+	            
+	            var genreDim = facts.dimension(function(d){
+	                return d.Genre;
+	            });
+	            
+	         	// ciando agrupamento
+	         	// OBS. cada grafico tem q ter uma DIMENSAO e um GRUPO (sao os dois eixos)
+	            var wwgByYearGroup = yearDim.group().reduceSum(function(d){
+	                return d.Worldwide_Gross_M;
+	            });
+	         	
+	            var wwgByGenreGroup = genreDim.group().reduceSum(function(d){
+	                return d.Worldwide_Gross_M;
+	            });
+	
+				yearChart.width(650)
+				     .height(500)
+				     .x(d3.scale.ordinal())
+				     .y(d3.scale.linear().domain([0,12500]))
+				     .xUnits(dc.units.ordinal)
+				     .brushOn(false)
+				     .xAxisLabel('Ano')
+				     .yAxisLabel('Total')
+				     .margins({top: 10, right: 50, bottom: 50, left: 60})
+				     .dimension(yearDim)
+				     .barPadding(0.15)
+				     .outerPadding(0.15)
+				     .group(wwgByYearGroup);
+				
+				genreChart.width(650)
+				     .height(500)
+				     .x(d3.scale.ordinal())
+				     .y(d3.scale.linear().domain([0,12500]))
+				     .xUnits(dc.units.ordinal)
+				     .brushOn(false)
+				     .xAxisLabel('Gênero')
+				     .yAxisLabel('Total')
+				     .margins({top: 10, right: 50, bottom: 50, left: 60})
+				     .dimension(genreDim)
+				     .barPadding(0.1)
+				     .outerPadding(0.05)
+				     .group(wwgByGenreGroup);
+	
+	            dc.renderAll(); // atualiza todos os graficos
+	
+			});
+		</script>
+	</body>
+</html>

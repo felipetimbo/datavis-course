@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Variação dos Valores das ações da Apple e do Facebook (%)</title>
+<link rel="stylesheet" href="css/dc.css">
+<link rel="stylesheet" href="css/styles.css">
+<script src="js/crossfilter.js" charset="utf-8"></script>
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/dc.js" charset="utf-8"></script>
+
+</head>
+<body>
+	<div>
+		<h1>Variação dos Valores das ações da Apple e do Facebook (%)</h1>
+		<div id="chart"></div>
+	</div>
+	<script type="text/javascript">
+        var compositeChart = dc.compositeChart('#chart');
+
+		d3.csv("stocks.csv", function(data){
+			// formatando nossos dados
+            var dtgFormat = d3.time.format("%Y/%m/%d");
+			
+            var apInitialDate = data[0].apple;
+            var fbInitialDate = data[0].facebook;
+            
+            data.forEach(function(d){
+                d.date = dtgFormat.parse(d.date);
+                d.apple = +d.apple;
+                d.facebook = +d.facebook;
+                d.applePercentage = +((d.apple*100/apInitialDate) - 100);
+                d.facebookPercentage = +((d.facebook*100/fbInitialDate) - 100);
+            });
+
+            //criando um crossfilter
+            var facts = crossfilter(data);
+
+            // ciando dimensao de data
+            var dateDim = facts.dimension(function(d){
+                return d.date;
+            });
+
+         	// ciando agrupamento
+         	// OBS. cada grafico tem q ter uma DIMENSAO e um GRUPO (sao os dois eixos)
+            var appleByDayGroup = dateDim.group().reduceSum(function(d){
+                return d.applePercentage;
+            });
+
+         	// novo grupo com a acao do facebook
+            var fbByDayGroup = dateDim.group().reduceSum(function(d){
+                return d.facebookPercentage;
+            });
+
+            // grafico composto com 2 lineCharts: composite
+            compositeChart.width(800)
+                     .height(400)
+                     .margins({top: 50, right: 50, bottom: 25, left: 40})
+                     .dimension(dateDim)
+                     .x(d3.time.scale().domain([new Date(2016, 8, 28), new Date(2017, 8, 28)]))
+                     .xUnits(d3.time.days)
+                     .renderHorizontalGridLines(true)
+                     .legend(dc.legend().x(700).y(5).itemHeight(13).gap(5))
+                     .brushOn(false)    
+                     .compose([
+                        dc.lineChart(compositeChart)
+                                  .group(appleByDayGroup, 'Apple')
+                                  .ordinalColors(['steelblue']),
+                        dc.lineChart(compositeChart)
+                                  .group(fbByDayGroup, 'Facebook')
+                                  .ordinalColors(['darkorange'])]);
+
+            dc.renderAll(); // atualiza todos os graficos
+
+		});
+	</script>
+</body>
+</html>
