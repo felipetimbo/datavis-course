@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title> Similar Songs Network</title>
+    
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
+    
+  </head>
+  <body>
+    <div id="container" class="container">
+      <header>
+      <h1>Similar Song Network</h1>
+      <p>Songs similar to one another according to <a href="http://www.last.fm/api">last.fm</a> are linked together. Song nodes are sized based on playcounts, and colored by artist. Tree root is the song <b>Poker Face</b> by <b>Lady Gaga</b>.</p>
+      </header>
+      <div id="main" role="main">
+        <div id="vis"></div>
+      </div>
+      <footer>
+      <p>Data from <a href="http://www.last.fm/api/show/track.getSimilar">last.fm</a>. Some songs include additional links for effect.<br/>Popular songs are defined as those with playcounts above the median for all songs in network. This example is a simpler version of the <a href="http://flowingdata.com/2012/08/02/how-to-make-an-interactive-network-visualization/">tutorial</a> by <a href="http://vallandingham.me/">Jim Vallandingham</a>.</p>
+
+      </footer>
+    </div> <!--! end of #container -->
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="js/Tooltip.js"></script>
+    <script src="js/songnetworkvis.js"></script>
+    <script>
+
+      // Create network;
+      var network = Network();
+
+      //Read json data and send data to network
+      d3.json("data/songs.json", function(error, graph) {
+        if (error) throw error;
+        return network("#vis", graph);
+      });
+
+    </script>
+  </body>
+</html>
