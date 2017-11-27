@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+  <title>Taxa de desemprego nos EUA em 2008</title>
+    
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+
+  <!-- Bootstrap includes -->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script> 
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+	<script src="https://d3js.org/queue.v1.min.js"></script>
+	<script src="https://d3js.org/topojson.v1.min.js"></script>
+	<script src="https://d3js.org/colorbrewer.v1.min.js"></script>
+	<style>
+
+		#tooltip {
+      	  position: absolute;
+      	  width: 240px;
+          height: auto;
+          padding: 10px;
+          background-color: white;
+          -webkit-border-radius: 10px;
+          -moz-border-radius: 10px;
+          border-radius: 10px;
+          -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+          -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+          box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+          pointer-events: none;
+		  margin: -30px 0px 0px 120px;
+        }
+        
+        #tooltip.hidden {
+          display: none;
+        }
+    
+        #tooltip p {
+          margin-bottom: 0;
+          font-family: sans-serif;
+          font-size: 16px;
+          line-height: 20px;
+        }
+	
+		.counties {
+		  fill: none;
+		}
+
+		.states {
+		  fill: none;
+		  stroke: #fff;
+		  stroke-linejoin: round;
+		}
+
+	</style>
+</head>
+<body>
+  <div id="container" class="container">
+    <header>
+     <h1>Taxa de desemprego nos EUA em 2008</h1>
+   </header>
+   <div id="map"></div>
+  </div>
+  <div id="tooltip" class="hidden">
+    <b><span id="name"> </span></b>
+    <p>Taxa de desemprego: <span id="taxa"></span></p>
+  </div>
+<script>
+
+
+var width = 960,
+    height = 600;
+
+var rateById = d3.map();
+
+var nameById = d3.map();
+
+var quantize = d3.scale.quantize()
+    .domain([0, .15])
+    .range(colorbrewer.Blues[9]);
+
+var projection = d3.geo.albersUsa()
+    .scale(1280)
+    .translate([width / 2, height / 2]);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+var svg = d3.select("#map").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+queue()
+    .defer(d3.json, "data/us.json")
+    .defer(d3.csv, "data/county_names.csv", function(d) { nameById.set(d.id, d.name);})
+    .defer(d3.tsv, "data/unemployment.tsv", function(d) { rateById.set(d.id, +d.rate); })
+    .await(ready);
+
+function ready(error, us) {
+  if (error) throw error;
+
+  svg.append("g")
+    .attr("class", "counties")
+    .selectAll("path")
+    .data(topojson.feature(us, us.objects.counties).features)
+    .enter().append("path")
+      .attr("fill", function(d) { return quantize(rateById.get(d.id)); })
+      .attr("d", path)
+      .on("click", function(d){
+		
+	})
+    .on("click", function(d){
+		
+	})
+	.on("mouseover", function(d){
+		d3.select(this) // seleciona o elemento atual
+			.style("cursor", "pointer") //muda o mouse para mãozinha
+			.attr("stroke-width", 3)
+			.attr("stroke","#ffff00");
+
+		var coordinates = [0, 0];
+      	coordinates = d3.mouse(this); // obtém a posição do mouse relativa a this
+      	var x = coordinates[0] + 10;
+      	var y = coordinates[1] + 20; // descontando a posição do svg
+      	
+      	showTooltip(d.id, x, y);
+    })
+	.on("mouseout", function(d){
+		d3.select(this)
+			.style("cursor", "default")
+			.attr("stroke-width", 0)
+			.attr("stroke","none"); //volta ao valor padrão
+
+		hideTooltip();
+	})
+
+  svg.append("path")
+      .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+      .attr("class", "states")
+      .attr("d", path);
+}
+
+function showTooltip(county_id, x, y){
+  d3.select("#tooltip")
+  .style("left", x + "px")
+  .style("top", y + "px")
+  .select("#taxa")
+  .text(Math.round(rateById.get(county_id)*10000)/100 + "%");
+  d3.select("#name")
+  .text(nameById.get(county_id));
+  d3.select("#tooltip")
+  .classed("hidden", false);
+}
+
+function hideTooltip(){
+  d3.select("#tooltip")
+  .classed("hidden", true);
+}
+
+
+</script>
+</body>
+</html>
